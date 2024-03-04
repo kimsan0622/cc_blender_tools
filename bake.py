@@ -109,8 +109,11 @@ def prep_bake(mat = None, samples = BAKE_SAMPLES, image_format = IMAGE_FORMAT, m
 
     # go into wireframe mode (so Blender doesn't update or recompile the material shaders while
     # we manipulate them for baking, and also so Blender doesn't fire up the cycles viewport...):
-    bake_state["shading"] = bpy.context.space_data.shading.type
-    bpy.context.space_data.shading.type = 'WIREFRAME'
+    if bpy.context.space_data is not None and bpy.context.space_data.type != 'CONSOLE':
+        bake_state["shading"] = bpy.context.space_data.shading.type
+        bpy.context.space_data.shading.type = 'WIREFRAME'
+    else:
+        bake_state["shading"] = 'SOLID'
     # set cycles rendering mode for baking
     bake_state["engine"] = bpy.context.scene.render.engine
     bpy.context.scene.render.engine = 'CYCLES'
@@ -180,7 +183,8 @@ def post_bake(state):
     # render engine
     bpy.context.scene.render.engine = state["engine"]
     # viewport shading
-    bpy.context.space_data.shading.type = state["shading"]
+    if bpy.context.space_data is not None and bpy.context.space_data.type != 'CONSOLE':
+        bpy.context.space_data.shading.type = state["shading"]
     # bake type
     bpy.context.scene.cycles.bake_type = state["cycles_bake_type"]
     bpy.context.scene.render.bake_type = state["render_bake_type"]
